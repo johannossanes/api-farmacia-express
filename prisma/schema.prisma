@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Medicamento {
+  id            Int           @id @default(autoincrement())
+  nome          String        @db.VarChar(50)
+  laboratorio   String        @db.VarChar(50)
+  preco         Decimal       @db.Decimal(7, 2)
+  controlado    Boolean       @default(false)
+  quantidade    Int
+  quantMinima   Int 
+  produto       ItemVenda[]
+  @@map("medicamento")
+}
+
+// - Cliente(s): contendo atributos como: id, nome, email, cidade, dataNasc ...
+
+model Cliente {
+  id          Int       @id @default(autoincrement())
+  nome        String    @db.VarChar(50)
+  email       String    @db.VarChar(120)
+  cidade      String    @db.VarChar(50)
+  dataNasc    DateTime  @default(now())
+  vendas      Venda[]
+  @@map("cliente")
+}
+
+
+// - Venda(s): contendo atributos como: id, clienteId, data, total (inicialmente 0).
+
+model Venda {
+  id          Int          @id @default(autoincrement())
+  cliente     Cliente     @relation(fields: [clienteId], references: [id])
+  clienteId   Int
+  data        DateTime     @default(now())
+  total       Int          @default(0)
+  itemVenda   ItemVenda[]
+  @@map("venda")
+}
+
+// - ItemVenda(s): contendo os atributos como: id, vendaId, produtoId, quantidade e preco
+
+model ItemVenda {
+  id            Int              @id @default(autoincrement())
+  venda         Venda            @relation(fields: [vendaId], references: [id])
+  vendaId       Int
+  produto       Medicamento      @relation(fields: [produtoId], references: [id])
+  produtoId     Int
+  quantidade    Int              @default(0)
+  preco         Decimal          @db.Decimal(7, 2)
+  @@map("itemVenda")
+}
