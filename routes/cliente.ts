@@ -13,8 +13,10 @@ const clienteSchema = z.object({
      email: z.string().min(10,
     { message: "E-mail, no mínimo, 10 caracteres" }),
     cidade: z.string(),
-    dataNasc: z.string().refine(val => Number.isInteger(Date.parse(val)),
-    { message: "Informe uma data válida no formato YYYY-MM-DD" }),
+    dataNasc: z.string().refine(val => !isNaN(Date.parse(val)), {
+        message: "Informe uma data válida no formato YYYY-MM-DD"
+    })
+    .transform(val => new Date(val))
 })
 
 router.get('/', async (req, res) => {
