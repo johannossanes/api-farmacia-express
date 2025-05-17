@@ -8,8 +8,10 @@ const router = Router()
 
 const vendaSchema = z.object({
     clienteId: z.number(),
-    data: z.string().refine(val => Number.isInteger(Date.parse(val)),
-    { message: "Informe uma data válida no formato YYYY-MM-DD" }),
+    data: z.string().refine(val => !isNaN(Date.parse(val)), {
+        message: "Informe uma data válida no formato YYYY-MM-DD"
+    })
+    .transform(val => new Date(val)),
     total: z.number()
 })
 
