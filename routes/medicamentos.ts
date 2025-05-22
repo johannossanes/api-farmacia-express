@@ -33,6 +33,21 @@ router.get('/', async (req, res) => {
     }
 })
 
+router.get('/estoque-baixo', async (req, res) => {
+    try {
+        const medicamentos = await prisma.medicamento.findMany()
+
+        const estoqueBaixo = medicamentos.filter(m => m.quantidade <= m.quantMinima)
+
+        estoqueBaixo.sort((a, b) => a.quantidade - b.quantidade)
+
+        res.status(200).json(estoqueBaixo)
+
+    } catch (error) {
+        res.status(500).json({ error: error})
+    }
+})
+
 router.post('/', async (req, res) => {
 
     const valida = medicamentoSchema.safeParse(req.body)
