@@ -9,13 +9,12 @@ const router = Router()
 const itemVendaSchema = z.object({
     vendaId: z.number().int(),
     produtoId: z.number().int(),
-    quantidade: z.number().int(),
-    preco: z.number()
+    quantidade: z.number().int().positive(),
+    preco: z.number().positive()
 
 })
 
 router.get('/', async (req, res) => {
-
 
     try {
         const itemVenda = await prisma.itemVenda.findMany()
@@ -35,16 +34,47 @@ router.post('/', async (req, res) => {
 
     const { vendaId, produtoId, quantidade, preco } = valida.data
 
-    try {
-        const itemVenda = await prisma.itemVenda.create({
-            data: { vendaId, produtoId, quantidade, preco }
-        })
-        res.status(201).json(itemVenda)
+    const dadoVenda = await prisma.venda.findUnique({
+        where: {id: vendaId}
+    })
 
-    } catch (error) {
-        res.status(400).json({ error: error })
+    const dadoProduto = await prisma.medicamento.findUnique({
+        where: {id: produtoId}
+    })
+
+    if (!dadoVenda){
+        res.status(404).json({ error: "Venda não encontrada."})
         return
     }
+
+    if (!dadoProduto){
+        res.status(404).json({ error: "Produto não encontrado."})
+        return
+    }
+
+    if (quantidade > dadoProduto?.quantidade){
+        res.status(400).json({ error: "Estoque insuficiente."})
+        return
+    }
+
+    try{
+        
+        const [itemVenda, produto] = await prisma.$transaction([
+            prisma.itemVenda.create({
+                data: { vendaId, produtoId, quantidade, preco }
+            }),
+            prisma.medicamento.update({
+                where: { id: produtoId},
+                data: { quantidade: { decrement: quantidade}}
+                
+            })
+        ])
+        res.status(201).json({ itemVenda, produto })
+
+    } catch (error) {
+        res.status(400).json({ error: error})
+    }
+
 })
 
 router.put('/:id', async (req, res) => {
@@ -57,6 +87,7 @@ router.put('/:id', async (req, res) => {
     }
 
     const { quantidade, preco} = valida.data
+
 
     try {
         const venda = await prisma.itemVenda.update({

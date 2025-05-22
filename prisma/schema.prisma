@@ -26,7 +26,7 @@ model Cliente {
   nome        String    @db.VarChar(50)
   email       String    @db.VarChar(120)
   cidade      String    @db.VarChar(50)
-  dataNasc    DateTime  @default(now())
+  dataNasc    DateTime  @db.Date
   vendas      Venda[]
   @@map("cliente")
 }
@@ -38,7 +38,7 @@ model Venda {
   id          Int          @id @default(autoincrement())
   cliente     Cliente     @relation(fields: [clienteId], references: [id])
   clienteId   Int
-  data        DateTime     @default(now())
+  data        DateTime     
   total       Int          @default(0)
   itemVenda   ItemVenda[]
   @@map("venda")
