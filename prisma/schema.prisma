@@ -36,10 +36,10 @@ model Cliente {
 
 model Venda {
   id          Int          @id @default(autoincrement())
-  cliente     Cliente     @relation(fields: [clienteId], references: [id])
+  cliente     Cliente      @relation(fields: [clienteId], references: [id])
   clienteId   Int
-  data        DateTime     
-  total       Int          @default(0)
+  data        DateTime     @db.Date 
+  total       Decimal      @db.Decimal(9,2)    @default(0)
   itemVenda   ItemVenda[]
   @@map("venda")
 }
